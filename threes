@@ -1,0 +1,22 @@
+library(tidyverse)
+library(threejs)
+
+flight <- read_tsv("http://www.jaredlander.com/data/Flights_Jan_2.tsv")
+
+airports <- flight %>% 
+  count(From_Lat, From_Long) %>% 
+  arrange(desc(n))
+
+
+flight <- flight %>% 
+  group_by(From_Lat, From_Long, To_Lat, To_Long) %>% 
+  count()
+
+earth <- "https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg"
+
+globejs(img = earth, lat = airports$From_Lat, long =  airports$From_Long,
+        value = airports$n * 5, color = "red",
+        arcs = flight %>% 
+          select(From_Lat, From_Long, To_Lat, To_Long),
+        arcsHeight = .4, arcsLwd = flight$n, arcsColor = "#3e4ca2", arcsOpacity = .85,
+        atmosphere = TRUE, fov = 30, rotationlat = .5, rotationlong = -.5)
